@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">NYTimesSearch</string>
+    <string name="query_hint">Enter search query</string>
+</resources>
