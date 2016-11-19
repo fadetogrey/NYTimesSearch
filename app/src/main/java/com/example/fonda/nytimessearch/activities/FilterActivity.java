@@ -20,6 +20,9 @@ import org.parceler.Parcels;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 import static com.example.fonda.nytimessearch.models.Filters.CB_ARTS;
 import static com.example.fonda.nytimessearch.models.Filters.CB_FASHION;
 import static com.example.fonda.nytimessearch.models.Filters.CB_SPORTS;
@@ -28,27 +31,23 @@ public class FilterActivity extends AppCompatActivity implements DatePickerDialo
 
     // REQUEST_CODE can be any value we like, used to determine the result type later
     private final int REQUEST_CODE = 20;
-    String beginDate;
-    EditText etBeginDate;
-    Spinner spSortOrder;
-    CheckBox cbArts;
-    CheckBox cbFashion;
-    CheckBox cbSports;
     final Calendar dateSet = Calendar.getInstance();
+
+    @BindView(R.id.etBeginDate) EditText etBeginDate;
+    @BindView(R.id.spSortOrder) Spinner spSortOrder;
+    @BindView(R.id.cbArts) CheckBox cbArts;
+    @BindView(R.id.cbFashion) CheckBox cbFashion;
+    @BindView(R.id.cbSports) CheckBox cbSports;
+
+    String beginDate;
     Filters filters;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_filter);
-        // getSupportActionBar().hide();
-
-        // Find the Views from the layout
-        etBeginDate = (EditText) findViewById(R.id.etBeginDate);
-        spSortOrder = (Spinner) findViewById(R.id.spSortOrder);
-        cbArts = (CheckBox) findViewById(R.id.cbArts);
-        cbFashion = (CheckBox) findViewById(R.id.cbFashion);
-        cbSports = (CheckBox) findViewById(R.id.cbSports);
+        // getActionBar().hide();
+        ButterKnife.bind(this);
 
         // Get the data passed in for the intent
         filters = (Filters) Parcels.unwrap(getIntent().getParcelableExtra("filters"));

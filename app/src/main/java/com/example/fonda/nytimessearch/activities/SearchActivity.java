@@ -32,6 +32,8 @@ import org.parceler.Parcels;
 
 import java.util.ArrayList;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import cz.msebera.android.httpclient.Header;
 
 import static com.example.fonda.nytimessearch.models.Filters.NEWS_TOPICS;
@@ -41,10 +43,11 @@ public class SearchActivity extends AppCompatActivity {
     // REQUEST_CODE can be any value we like, used to determine the result type later
     private final int REQUEST_CODE = 20;
 
+    @BindView(R.id.gvResults) GridView gvResults;
+    @BindView(R.id.toolbar) Toolbar toolbar;
+
     EditText etQuery;
     Button btnSearch;
-    GridView gvResults;
-
     ArrayList<Article> articles; // model
     ArticleArrayAdapter adapter; // controller
     Filters filters = null; // model
@@ -53,8 +56,8 @@ public class SearchActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
-        // Find the Toolbar view inside the activity layout
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        ButterKnife.bind(this);
+
         // Sets the Toolbar to act as the ActionBar for this Activity window.
         // Make sure the toolbar exists in the activity and is not null
         if (toolbar != null) {
@@ -64,10 +67,6 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     public void initialize() {
-        // setup views
-        // etQuery = (EditText) findViewById(R.id.etQuery);
-        // btnSearch = (Button) findViewById(R.id.btnSearch);
-        gvResults = (GridView) findViewById(R.id.gvResults);
         // setup model
         articles = new ArrayList<>();
         // setup controller
@@ -83,7 +82,6 @@ public class SearchActivity extends AppCompatActivity {
                 // get the article to display
                 Article article = articles.get(i);
                 // pass in the article to intent
-                //intent.putExtra("url", article.getWebUrl());
                 intent.putExtra("article", Parcels.wrap(article));
                 // launch the activity
                 startActivity(intent);
@@ -91,18 +89,14 @@ public class SearchActivity extends AppCompatActivity {
         });
     }
 
-    public void fetchArticles(String query, int page) {
-        // String query = etQuery.getText().toString();
-
-        // Toast.makeText(this, "Search for " + query, Toast.LENGTH_LONG).show();
-
+    public void fetchArticles(String query) {
         AsyncHttpClient client = new AsyncHttpClient();
         String url = "https://api.nytimes.com/svc/search/v2/articlesearch.json";
         // String url = "https://api.nytimes.com/svc/search/v2/articlesearch.json?q=health&begin_date=20160112&sort=oldest&fq=news_desk:(%22Education%22%20%22Health%22)&api-key=227c750bb7714fc39ef1559ef1bd8329";
 
         RequestParams params = new RequestParams();
         params.put("api-key", "f5474869169d4339815ad7fb983e105c");
-        params.put("page", page);
+        params.put("page", 0);
         params.put("q", query);
         if (filters != null) {
             String encodedValues;
@@ -110,9 +104,10 @@ public class SearchActivity extends AppCompatActivity {
             params.put("sort", filters.getSortOrder().toLowerCase());
             encodedValues = composeNewsDeskValues();
             if (!encodedValues.isEmpty()) {
-                params.put("fq", encodedValues); //TODO
+                params.put("fq", encodedValues);
             }
         }
+        Log.d("DEBUG", "==> params: " + params.toString());
 
         // TODO : pass in different page numbers for endless scrolling
         client.get(url, params, new JsonHttpResponseHandler() {
@@ -186,7 +181,7 @@ public class SearchActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 // Perform query
-                fetchArticles(query, 0);
+                fetchArticles(query);
                 // workaround to avoid issues with some emulators and keyboard devices firing twice if a keyboard enter is used
                 // see https://code.google.com/p/android/issues/detail?id=24599
                 searchView.clearFocus();
@@ -219,8 +214,8 @@ public class SearchActivity extends AppCompatActivity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId()) {
-            // case R.id.action_search:
-                // return true;
+            case R.id.action_search:
+                return true;
             case R.id.action_filter:
                 showFilterDialog();
                 return true;

@@ -13,4 +13,7 @@
         <item name="android:textColor">#ffffff</item>
     </style>
 
+    <style name="ArticleTitleFont">
+        <item name="android:textSize">@dimen/article_title_font</item>
+    </style>
 </resources>
