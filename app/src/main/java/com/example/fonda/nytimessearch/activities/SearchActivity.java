@@ -6,7 +6,9 @@ import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
+import android.util.SparseBooleanArray;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -14,7 +16,6 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
-import android.widget.Toast;
 
 import com.example.fonda.nytimessearch.R;
 import com.example.fonda.nytimessearch.adapters.ArticleArrayAdapter;
@@ -33,6 +34,8 @@ import java.util.ArrayList;
 
 import cz.msebera.android.httpclient.Header;
 
+import static com.example.fonda.nytimessearch.models.Filters.NEWS_TOPICS;
+
 public class SearchActivity extends AppCompatActivity {
 
     // REQUEST_CODE can be any value we like, used to determine the result type later
@@ -44,7 +47,7 @@ public class SearchActivity extends AppCompatActivity {
 
     ArrayList<Article> articles; // model
     ArticleArrayAdapter adapter; // controller
-    Filters filters; // model
+    Filters filters = null; // model
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,7 +72,6 @@ public class SearchActivity extends AppCompatActivity {
         articles = new ArrayList<>();
         // setup controller
         adapter = new ArticleArrayAdapter(this, articles);
-        filters = new Filters("", "", null);
         // link adapter to results
         gvResults.setAdapter(adapter);
         // attach click listener to individual result (Article)
@@ -89,7 +91,7 @@ public class SearchActivity extends AppCompatActivity {
         });
     }
 
-    public void fetchArticles(String query) {
+    public void fetchArticles(String query, int page) {
         // String query = etQuery.getText().toString();
 
         // Toast.makeText(this, "Search for " + query, Toast.LENGTH_LONG).show();
@@ -100,16 +102,19 @@ public class SearchActivity extends AppCompatActivity {
 
         RequestParams params = new RequestParams();
         params.put("api-key", "f5474869169d4339815ad7fb983e105c");
-        params.put("page", 0);
+        params.put("page", page);
         params.put("q", query);
         if (filters != null) {
+            String encodedValues;
             params.put("begin_date", filters.getDate());
             params.put("sort", filters.getSortOrder().toLowerCase());
-            //params.put("fq", ""); //TODO
+            encodedValues = composeNewsDeskValues();
+            if (!encodedValues.isEmpty()) {
+                params.put("fq", encodedValues); //TODO
+            }
         }
 
         // TODO : pass in different page numbers for endless scrolling
-
         client.get(url, params, new JsonHttpResponseHandler() {
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 //super.onSuccess(statusCode, headers, response);
@@ -145,6 +150,26 @@ public class SearchActivity extends AppCompatActivity {
         });
     }
 
+    private String composeNewsDeskValues() {
+        String prefix = "news_desk:(";
+        String suffix = ")";
+        String retVal = "";
+        ArrayList<String> arr = new ArrayList<String>();
+
+        if (filters != null) {
+            for (int i = 0; i < 3; i++) {
+                if (filters.getNewsDeskValues(i) == true) {
+                    arr.add(NEWS_TOPICS[i]);
+                }
+            }
+            if (!arr.isEmpty()) {
+                retVal = prefix + TextUtils.join(" ", arr) + suffix;
+            }
+        }
+
+        return retVal;
+    }
+
     // Inflate the menu icons on the toolbar
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -161,7 +186,7 @@ public class SearchActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 // Perform query
-                fetchArticles(query);
+                fetchArticles(query, 0);
                 // workaround to avoid issues with some emulators and keyboard devices firing twice if a keyboard enter is used
                 // see https://code.google.com/p/android/issues/detail?id=24599
                 searchView.clearFocus();
@@ -181,6 +206,9 @@ public class SearchActivity extends AppCompatActivity {
     public void showFilterDialog() {
         Intent intent = new Intent(getApplicationContext(), FilterActivity.class);
         // Pass the filters to the intent
+        if (filters == null) {
+            filters = new Filters("", "", new SparseBooleanArray());
+        }
         intent.putExtra("filters", Parcels.wrap(filters));
         startActivityForResult(intent, REQUEST_CODE);
     }
@@ -207,7 +235,7 @@ public class SearchActivity extends AppCompatActivity {
         if (resultCode == RESULT_OK && requestCode == REQUEST_CODE) {
             // Extract name value from result extras
             filters = (Filters) Parcels.unwrap(data.getParcelableExtra("filters"));
-            Toast.makeText(this, "returned from dialog " + filters.getDate(), Toast.LENGTH_SHORT).show();
         }
     }
+
 }
