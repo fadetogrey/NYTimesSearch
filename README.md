@@ -2,7 +2,7 @@
 
 NYTimesSearch is an android app that allows a user to search for articles on web using simple filters. The app utilizes [New York Times Search API](http://developer.nytimes.com/docs/read/article_search_api_v2).
 
-Time spent: 25.5 hours spent in total
+Time spent: 32 hours spent in total
 
 ## User Stories
 
@@ -17,16 +17,15 @@ The following **required** functionality is completed:
   * [x] Sort order (oldest or newest)
 * [x] Subsequent searches have any filters applied to the search results
 * [x] User can tap on any image in results to see the full text of article **full-screen**
-* [ ] User can **scroll down to see more articles**. The maximum number of articles is limited by the API search.
+* [x] User can **scroll down to see more articles**. The maximum number of articles is limited by the API search.
 * [x] User can **share an article link** to their friends or email it to themselves
-      (It was working but broke at last minute.)
 
 The following **optional** features are implemented:
 
 * [x] Improved the user interface and experiment with image assets and/or styling and coloring
       Added filter icon in action bar from Material Design.
 * [ ] Replaced Filter Settings Activity with a lightweight modal overlay
-* [ ] Implements robust error handling, [check if internet is available](http://guides.codepath.com/android/Sending-and-Managing-Network-Requests#checking-for-network-connectivity), handle error cases, network failures
+* [x] Implements robust error handling, [check if internet is available](http://guides.codepath.com/android/Sending-and-Managing-Network-Requests#checking-for-network-connectivity), handle error cases, network failures
 * [ ] Use the [RecyclerView](http://guides.codepath.com/android/Using-the-RecyclerView) with the `StaggeredGridLayoutManager` to display improve the grid of image results
 
 The following **stretch** features are implemented:

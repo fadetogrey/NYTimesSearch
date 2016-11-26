@@ -3,7 +3,6 @@ package com.example.fonda.nytimessearch.adapters;
 import android.content.Context;
 import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -56,9 +55,15 @@ public class ArticleArrayAdapter extends ArrayAdapter<Article> {
         // Populate data into the template view using the data object
         viewHolder.tvTitle.setText(article.getHeadLine());
         String thumbnail = article.getThumbNail();
-        if (!TextUtils.isEmpty(thumbnail)) {
-            Picasso.with(getContext()).load(Uri.parse(thumbnail)).into(viewHolder.ivImage);
-        }
+        // if (!TextUtils.isEmpty(thumbnail)) {
+            // Picasso.with(getContext()).load(Uri.parse(thumbnail)).into(viewHolder.ivImage);
+        // } else {
+            // viewHolder.ivImage = null;
+        // }
+        Picasso.with(getContext())
+                .load(Uri.parse(thumbnail))
+                .placeholder(R.drawable.nytimes_558x360)
+                .into(viewHolder.ivImage);
         return convertView;
     }
 

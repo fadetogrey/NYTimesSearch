@@ -26,8 +26,9 @@
         <GridView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@+id/btnSearch"
             android:id="@+id/gvResults"
+            android:horizontalSpacing="@dimen/article_spacing"
+            android:verticalSpacing="@dimen/article_spacing"
             android:numColumns="@integer/numCols" />
 
 

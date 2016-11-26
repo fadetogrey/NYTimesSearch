@@ -1,7 +1,11 @@
 package com.example.fonda.nytimessearch.activities;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
@@ -16,7 +20,9 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
+import android.widget.Toast;
 
+import com.example.fonda.nytimessearch.EndlessScrollListener;
 import com.example.fonda.nytimessearch.R;
 import com.example.fonda.nytimessearch.adapters.ArticleArrayAdapter;
 import com.example.fonda.nytimessearch.models.Article;
@@ -30,6 +36,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.parceler.Parcels;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import butterknife.BindView;
@@ -51,6 +58,10 @@ public class SearchActivity extends AppCompatActivity {
     ArrayList<Article> articles; // model
     ArticleArrayAdapter adapter; // controller
     Filters filters = null; // model
+    EndlessScrollListener scrollListener = null;
+    String userSubmittedQuery = null;
+    int page = 0;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,62 +98,95 @@ public class SearchActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+        // Attach the listener to the AdapterView onCreate
+        scrollListener = new EndlessScrollListener() {
+            @Override
+            public boolean onLoadMore(int page, int totalItemsCount) {
+                // Triggered only when new data needs to be appended to the list
+                // Add whatever code is needed to append new items to your AdapterView
+                loadNextDataFromApi(page);
+                // or loadNextDataFromApi(totalItemsCount);
+                return true; // ONLY if more data is actually being loaded; false otherwise.
+            }
+        };
+        gvResults.setOnScrollListener(scrollListener);
     }
 
-    public void fetchArticles(String query) {
-        AsyncHttpClient client = new AsyncHttpClient();
-        String url = "https://api.nytimes.com/svc/search/v2/articlesearch.json";
-        // String url = "https://api.nytimes.com/svc/search/v2/articlesearch.json?q=health&begin_date=20160112&sort=oldest&fq=news_desk:(%22Education%22%20%22Health%22)&api-key=227c750bb7714fc39ef1559ef1bd8329";
+    // Append the next page of data into the adapter
+    // This method probably sends out a network request and appends new data items to your adapter.
+    public void loadNextDataFromApi(int offset) {
+        fetchArticles(userSubmittedQuery, offset);
+    }
 
-        RequestParams params = new RequestParams();
-        params.put("api-key", "f5474869169d4339815ad7fb983e105c");
-        params.put("page", 0);
-        params.put("q", query);
-        if (filters != null) {
-            String encodedValues;
-            params.put("begin_date", filters.getDate());
-            params.put("sort", filters.getSortOrder().toLowerCase());
-            encodedValues = composeNewsDeskValues();
-            if (!encodedValues.isEmpty()) {
-                params.put("fq", encodedValues);
-            }
-        }
-        Log.d("DEBUG", "==> params: " + params.toString());
+    /**
+     *   // Send an API request to retrieve appropriate paginated data
+     //  --> Send the request including an offset value (i.e `page`) as a query parameter.
+     //  --> Deserialize and construct new model objects from the API response
+     //  --> Append the new data objects to the existing set of items inside the array of items
+     //  --> Notify the adapter of the new items made with `notifyDataSetChanged()`
+     * @param query Query submitted by user
+     * @param page Page/chunk of data to retrieve next
+     */
+    public void fetchArticles(final String query, final int page) {
+        Handler handler = new Handler();
+        final Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                AsyncHttpClient client = new AsyncHttpClient();
+                String url = "https://api.nytimes.com/svc/search/v2/articlesearch.json";
+                // String url = "https://api.nytimes.com/svc/search/v2/articlesearch.json?q=health&begin_date=20160112&sort=oldest&fq=news_desk:(%22Education%22%20%22Health%22)&api-key=227c750bb7714fc39ef1559ef1bd8329";
 
-        // TODO : pass in different page numbers for endless scrolling
-        client.get(url, params, new JsonHttpResponseHandler() {
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                //super.onSuccess(statusCode, headers, response);
-                Log.d("DEBUG", response.toString());
-                JSONArray articleJsonResults = null;
-                try {
-                    articleJsonResults = response.getJSONObject("response").getJSONArray("docs");
-                    adapter.addAll(Article.fromJSONArray(articleJsonResults));
-                    Log.d("DEBUG", articles.toString());
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                RequestParams params = new RequestParams();
+                params.put("api-key", "f5474869169d4339815ad7fb983e105c");
+                params.put("page", page);
+                params.put("q", query);
+                if (filters != null) {
+                    String encodedValues;
+                    params.put("begin_date", filters.getDate());
+                    params.put("sort", filters.getSortOrder().toLowerCase());
+                    encodedValues = composeNewsDeskValues();
+                    if (!encodedValues.isEmpty()) {
+                        params.put("fq", encodedValues);
+                    }
                 }
-            }
+                Log.d("DEBUG", "==> params: " + params.toString());
 
-            @Override
-            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                super.onFailure(statusCode, headers, responseString, throwable);
-                Log.d("DEBUG", responseString.toString());
-            }
+                client.get(url, params, new JsonHttpResponseHandler() {
+                    public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                        Log.d("DEBUG", response.toString());
+                        JSONArray articleJsonResults = null;
+                        try {
+                            articleJsonResults = response.getJSONObject("response").getJSONArray("docs");
+                            adapter.addAll(Article.fromJSONArray(articleJsonResults));
+                            Log.d("DEBUG", articles.toString());
 
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONArray errorResponse) {
-                super.onFailure(statusCode, headers, throwable, errorResponse);
-                Log.d("DEBUG", errorResponse.toString());
-            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
 
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                super.onFailure(statusCode, headers, throwable, errorResponse);
-                Log.d("DEBUG", errorResponse.toString());
+                    @Override
+                    public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
+                        super.onFailure(statusCode, headers, responseString, throwable);
+                        Log.d("DEBUG", responseString.toString());
+                    }
+
+                    @Override
+                    public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONArray errorResponse) {
+                        super.onFailure(statusCode, headers, throwable, errorResponse);
+                        Log.d("DEBUG", errorResponse.toString());
+                    }
+
+                    @Override
+                    public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                        super.onFailure(statusCode, headers, throwable, errorResponse);
+                        Log.d("DEBUG", errorResponse.toString());
+                    }
+                });
             }
-        });
+        };
+
+        handler.postDelayed(runnable, 2000);
     }
 
     private String composeNewsDeskValues() {
@@ -175,19 +219,34 @@ public class SearchActivity extends AppCompatActivity {
         // Find the search menu item from the layout
         MenuItem searchItem = menu.findItem(R.id.action_search);
 
+        // Get the view for the search menu item
         final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
 
+        // Attach a listener to the search view
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                // Perform query
-                fetchArticles(query);
-                // workaround to avoid issues with some emulators and keyboard devices firing twice if a keyboard enter is used
-                // see https://code.google.com/p/android/issues/detail?id=24599
-                searchView.clearFocus();
-
-                return true;
-
+                boolean retVal = true;
+                if (isNetworkAvailable() && isOnline()) {
+                    // New search term was entered
+                    // 1. save the search term
+                    userSubmittedQuery = query;
+                    // 2. reset the pagination and results array
+                    page = 0;
+                    adapter.clear(); // or articles.clear();
+                    adapter.notifyDataSetChanged();
+                    scrollListener.resetState();
+                    // Perform query
+                    fetchArticles(query, page++);
+                    // workaround to avoid issues with some emulators and keyboard devices firing twice
+                    // if a keyboard enter is used
+                    // see https://code.google.com/p/android/issues/detail?id=24599
+                    searchView.clearFocus();
+                } else {
+                    Toast.makeText(getApplicationContext(), "Network connection unavailable, please try again later.", Toast.LENGTH_SHORT).show();
+                    retVal = false;
+                }
+                return retVal;
             }
 
             @Override
@@ -231,6 +290,28 @@ public class SearchActivity extends AppCompatActivity {
             // Extract name value from result extras
             filters = (Filters) Parcels.unwrap(data.getParcelableExtra("filters"));
         }
+    }
+
+    /**
+     * Check to see if network is available
+     * @return
+     */
+    private Boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnectedOrConnecting();
+    }
+
+    public boolean isOnline() {
+        Runtime runtime = Runtime.getRuntime();
+        try {
+            Process ipProcess = runtime.exec("/system/bin/ping -c 1 8.8.8.8");
+            int     exitValue = ipProcess.waitFor();
+            return (exitValue == 0);
+        } catch (IOException e)          { e.printStackTrace(); }
+        catch (InterruptedException e) { e.printStackTrace(); }
+        return false;
     }
 
 }

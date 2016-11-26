@@ -23,6 +23,7 @@
     <WebView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_below="@id/toolbar1"
         android:id="@+id/wvArticle">
     </WebView>
 </RelativeLayout>
