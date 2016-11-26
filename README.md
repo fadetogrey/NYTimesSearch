@@ -42,13 +42,15 @@ The following **stretch** features are implemented:
 
 The following **additional** features are implemented:
 
-* [ ] List anything else that you can get done to improve the app functionality!
+* [x] Placeholder image for articles without images.
+* [x] Use SparseBooleanArray to persist checked values.
+* [x] Use Runnable to reduce API calls.
 
 ## Video Walkthrough
 
 Here's a walkthrough of implemented user stories:
 
-<img src='NYTimesSearch.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
+<img src='NYTimesSearch1.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
 
 GIF created with [LiceCap](http://www.cockos.com/licecap/).
 

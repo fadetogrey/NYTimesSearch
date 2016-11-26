@@ -49,6 +49,7 @@ public class SearchActivity extends AppCompatActivity {
 
     // REQUEST_CODE can be any value we like, used to determine the result type later
     private final int REQUEST_CODE = 20;
+    private final int DELAY = 1000;
 
     @BindView(R.id.gvResults) GridView gvResults;
     @BindView(R.id.toolbar) Toolbar toolbar;
@@ -186,7 +187,7 @@ public class SearchActivity extends AppCompatActivity {
             }
         };
 
-        handler.postDelayed(runnable, 2000);
+        handler.postDelayed(runnable, DELAY);
     }
 
     private String composeNewsDeskValues() {
