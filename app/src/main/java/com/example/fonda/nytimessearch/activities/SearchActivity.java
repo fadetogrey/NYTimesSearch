@@ -6,6 +6,8 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Parcelable;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
@@ -17,14 +19,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.Toast;
 
 import com.example.fonda.nytimessearch.EndlessScrollListener;
 import com.example.fonda.nytimessearch.R;
 import com.example.fonda.nytimessearch.adapters.ArticleArrayAdapter;
+import com.example.fonda.nytimessearch.fragments.SearchFilterFragment;
 import com.example.fonda.nytimessearch.models.Article;
 import com.example.fonda.nytimessearch.models.Filters;
 import com.loopj.android.http.AsyncHttpClient;
@@ -45,24 +46,19 @@ import cz.msebera.android.httpclient.Header;
 
 import static com.example.fonda.nytimessearch.models.Filters.NEWS_TOPICS;
 
-public class SearchActivity extends AppCompatActivity {
+public class SearchActivity extends AppCompatActivity implements SearchFilterFragment.OnSearchFilterActionListener {
 
-    // REQUEST_CODE can be any value we like, used to determine the result type later
-    private final int REQUEST_CODE = 20;
     private final int DELAY = 1000;
 
     @BindView(R.id.gvResults) GridView gvResults;
     @BindView(R.id.toolbar) Toolbar toolbar;
 
-    EditText etQuery;
-    Button btnSearch;
     ArrayList<Article> articles; // model
     ArticleArrayAdapter adapter; // controller
     Filters filters = null; // model
     EndlessScrollListener scrollListener = null;
     String userSubmittedQuery = null;
     int page = 0;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +72,19 @@ public class SearchActivity extends AppCompatActivity {
             setSupportActionBar(toolbar);
         }
         initialize();
+    }
+
+    private void showFilterDialog() {
+        //Intent intent = new Intent(getApplicationContext(), SearchFilterFragment.class);
+        // Pass the filters to the intent
+        //intent.putExtra("filters", Parcels.wrap(filters));
+
+        if (filters == null) {
+            filters = new Filters("", "", new SparseBooleanArray());
+        }
+        FragmentManager fm = getSupportFragmentManager();
+        SearchFilterFragment editNameDialogFragment = SearchFilterFragment.newInstance(/*Parcels.wrap(*/filters/*)*/);
+        editNameDialogFragment.show(fm, "");
     }
 
     public void initialize() {
@@ -129,6 +138,7 @@ public class SearchActivity extends AppCompatActivity {
      * @param page Page/chunk of data to retrieve next
      */
     public void fetchArticles(final String query, final int page) {
+
         Handler handler = new Handler();
         final Runnable runnable = new Runnable() {
             @Override
@@ -258,16 +268,6 @@ public class SearchActivity extends AppCompatActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
-    public void showFilterDialog() {
-        Intent intent = new Intent(getApplicationContext(), FilterActivity.class);
-        // Pass the filters to the intent
-        if (filters == null) {
-            filters = new Filters("", "", new SparseBooleanArray());
-        }
-        intent.putExtra("filters", Parcels.wrap(filters));
-        startActivityForResult(intent, REQUEST_CODE);
-    }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -281,15 +281,6 @@ public class SearchActivity extends AppCompatActivity {
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
-        }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        // REQUEST_CODE is defined above
-        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE) {
-            // Extract name value from result extras
-            filters = (Filters) Parcels.unwrap(data.getParcelableExtra("filters"));
         }
     }
 
@@ -315,4 +306,8 @@ public class SearchActivity extends AppCompatActivity {
         return false;
     }
 
+    @Override
+    public void onFinishedSearchFilterFragment(Parcelable data) {
+        filters = Parcels.unwrap(data);
+    }
 }

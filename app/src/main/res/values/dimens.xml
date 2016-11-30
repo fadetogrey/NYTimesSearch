@@ -4,4 +4,10 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="article_title_font">12sp</dimen>
     <dimen name="article_spacing">18sp</dimen>
+    <dimen name="filter_margin_top">20dp</dimen>
+    <dimen name="filter_custom_textsize">13sp</dimen>
+    <dimen name="filter_edittext_indent">5dp</dimen>
+    <dimen name="filter_label_width">80dp</dimen>
+    <dimen name="filter_control_width">150dp</dimen>
+    <dimen name="filter_control_height">30dp</dimen>
 </resources>

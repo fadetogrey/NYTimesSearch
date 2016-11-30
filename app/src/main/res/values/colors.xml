@@ -4,4 +4,5 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
     <color name="topbarBackground">#2d1152</color>
+    <color name="saveButtonBackground">#7900b5</color>
 </resources>

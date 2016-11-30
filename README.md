@@ -2,7 +2,7 @@
 
 NYTimesSearch is an android app that allows a user to search for articles on web using simple filters. The app utilizes [New York Times Search API](http://developer.nytimes.com/docs/read/article_search_api_v2).
 
-Time spent: 32 hours spent in total
+Time spent: 32+7 hours spent in total
 
 ## User Stories
 
@@ -11,28 +11,29 @@ The following **required** functionality is completed:
 * [x] User can **search for news article** by specifying a query and launching a search. Search displays a grid of image results from the New York Times Search API.
   * [x] Used the **ActionBar SearchView** or custom layout as the query box
 * [x] User can click on "settings" which allows selection of **advanced search options** to filter results
+  * [x] Use Parcelable to pass settings instead of Serializable
 * [x] User can configure advanced search filters such as:
   * [x] Begin Date (using a date picker)
   * [x] News desk values (Arts, Fashion & Style, Sports)
   * [x] Sort order (oldest or newest)
-* [x] Subsequent searches have any filters applied to the search results
+* [x] Subsequent searches will have any filters applied to the search results
 * [x] User can tap on any image in results to see the full text of article **full-screen**
-* [x] User can **scroll down to see more articles**. The maximum number of articles is limited by the API search.
+* [x] User can **scroll down infinitely to see more articles**. The maximum number of articles is limited by the API search.
 * [x] User can **share an article link** to their friends or email it to themselves
 
 The following **optional** features are implemented:
 
-* [x] Improved the user interface and experiment with image assets and/or styling and coloring
-      Added filter icon in action bar from Material Design.
-* [ ] Replaced Filter Settings Activity with a lightweight modal overlay
 * [x] Implements robust error handling, [check if internet is available](http://guides.codepath.com/android/Sending-and-Managing-Network-Requests#checking-for-network-connectivity), handle error cases, network failures
+* [x] Replaced Filter Settings Activity with a lightweight modal overlay
+* [x] Improved the user interface and experiment with image assets and/or styling and coloring
+      See additional items below.
 * [ ] Use the [RecyclerView](http://guides.codepath.com/android/Using-the-RecyclerView) with the `StaggeredGridLayoutManager` to display improve the grid of image results
 
 The following **stretch** features are implemented:
 
 * [ ] For different news articles that only have text or only have images, use [Heterogenous Layouts](http://guides.codepath.com/android/Heterogenous-Layouts-inside-RecyclerView) with RecyclerView
 * [x] Apply the popular [Butterknife annotation library](http://guides.codepath.com/android/Reducing-View-Boilerplate-with-Butterknife) to reduce view boilerplate.
-* [ ] Use Parcelable instead of Serializable using the popular [Parceler library](http://guides.codepath.com/android/Using-Parceler).
+* [x] Use Parcelable instead of Serializable using the popular [Parceler library](http://guides.codepath.com/android/Using-Parceler).
 * [ ] Replace Picasso with [Glide](http://inthecheesefactory.com/blog/get-to-know-glide-recommended-by-google/en) for more efficient image rendering.
 * [ ] Leverages the [data binding support module](http://guides.codepath.com/android/Applying-Data-Binding-for-Views) to bind data into layout templates.
 * [ ] Uses [retrolambda expressions](http://guides.codepath.com/android/Lambda-Expressions) to cleanup event handling blocks.
@@ -45,18 +46,27 @@ The following **additional** features are implemented:
 * [x] Placeholder image for articles without images.
 * [x] Use SparseBooleanArray to persist checked values.
 * [x] Use Runnable to reduce API calls.
+* [x] Applied Butterknife first to Activity, then to Dialog Fragment.
+* [x] Added filter icon in action bar from Material Design.
+* [x] Customized Spinner Items
+* [x] Customized Begin Date EditText field with [border and gradient background](https://www.codeproject.com/tips/845894/how-to-make-edittext-with-border-and-gradient-back)
 
 ## Video Walkthrough
 
 Here's a walkthrough of implemented user stories:
 
 <img src='NYTimesSearch1.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
+<img src='http://imgur.com/a/7qQWN' title='Video Walkthrough' width='' alt='Video Walkthrough' />
 
 GIF created with [LiceCap](http://www.cockos.com/licecap/).
 
 ## Notes
 
 Describe any challenges encountered while building the app.
+[x] Dialog Fragments, nested dialog fragments, passing data between fragment and activities.
+[x] Have to attach onSave listener explicitly in the dialog fragment.
+[x] Was not able to select Data dropdown on Android Device Monitor to simulate loss of network connection. Tested only slow connection using hotel wi-fi.
+[x] Please confirm we don't use Intent for passing data from Dialog Fragment back to parent activity.
 
 ## Open-source libraries used
 

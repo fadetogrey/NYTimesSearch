@@ -16,4 +16,8 @@
     <style name="ArticleTitleFont">
         <item name="android:textSize">@dimen/article_title_font</item>
     </style>
+
+    <style name="spinner_dropdown_style1" parent="Widget.AppCompat.DropDownItem.Spinner">
+        <item name="android:textSize">@dimen/filter_custom_textsize</item>
+    </style>
 </resources>

@@ -21,10 +21,6 @@
 
         </activity>
         <activity android:name=".activities.ArticleActivity" />
-        <activity android:name=".activities.FilterActivity"
-            android:theme="@style/Theme.AppCompat.Dialog"
-            android:label="@string/filter_activity_name">
-        </activity>
     </application>
 
 </manifest>

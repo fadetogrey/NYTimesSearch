@@ -31,7 +31,6 @@
             android:verticalSpacing="@dimen/article_spacing"
             android:numColumns="@integer/numCols" />
 
-
     </RelativeLayout>
 
 </RelativeLayout>
