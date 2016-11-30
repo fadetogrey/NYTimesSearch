@@ -55,18 +55,21 @@ The following **additional** features are implemented:
 
 Here's a walkthrough of implemented user stories:
 
+<img src='NYTimesSearch5.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
+
+This is an older version but shows slow network connectivity:
+
 <img src='NYTimesSearch1.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
-<img src='http://imgur.com/a/7qQWN' title='Video Walkthrough' width='' alt='Video Walkthrough' />
 
 GIF created with [LiceCap](http://www.cockos.com/licecap/).
 
 ## Notes
 
 Describe any challenges encountered while building the app.
-[x] Dialog Fragments, nested dialog fragments, passing data between fragment and activities.
-[x] Have to attach onSave listener explicitly in the dialog fragment.
-[x] Was not able to select Data dropdown on Android Device Monitor to simulate loss of network connection. Tested only slow connection using hotel wi-fi.
-[x] Please confirm we don't use Intent for passing data from Dialog Fragment back to parent activity.
+* [x] Dialog Fragments, nested dialog fragments, passing data between fragment and activities.
+* [x] Have to attach onSave listener explicitly in the dialog fragment.
+* [x] Was not able to select Data dropdown on Android Device Monitor to simulate loss of network connection. Tested only slow connection using hotel wi-fi.
+* [x] Please confirm we don't use Intent for passing data from Dialog Fragment back to parent activity.
 
 ## Open-source libraries used
 
