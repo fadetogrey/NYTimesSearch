@@ -55,7 +55,7 @@ The following **additional** features are implemented:
 
 Here's a walkthrough of implemented user stories:
 
-<img src='NYTimesSearch5.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
+<img src='http://i.imgur.com/3Elg4zR.gifv' title='Video Walkthrough' width='' alt='Video Walkthrough' />
 
 This is an older version but shows slow network connectivity (first few seconds of gif):
 
