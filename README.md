@@ -57,7 +57,7 @@ Here's a walkthrough of implemented user stories:
 
 <img src='NYTimesSearch5.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
 
-This is an older version but shows slow network connectivity:
+This is an older version but shows slow network connectivity (first few seconds of gif):
 
 <img src='NYTimesSearch1.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
 
