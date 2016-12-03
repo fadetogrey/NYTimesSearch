@@ -10,7 +10,9 @@ import android.os.Parcelable;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
@@ -18,13 +20,12 @@ import android.util.SparseBooleanArray;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.GridView;
 import android.widget.Toast;
 
-import com.example.fonda.nytimessearch.EndlessScrollListener;
+import com.example.fonda.nytimessearch.EndlessRecyclerViewScrollListener;
+import com.example.fonda.nytimessearch.ItemClickSupport;
 import com.example.fonda.nytimessearch.R;
-import com.example.fonda.nytimessearch.adapters.ArticleArrayAdapter;
+import com.example.fonda.nytimessearch.adapters.ArticleAdapter;
 import com.example.fonda.nytimessearch.fragments.SearchFilterFragment;
 import com.example.fonda.nytimessearch.models.Article;
 import com.example.fonda.nytimessearch.models.Filters;
@@ -50,13 +51,13 @@ public class SearchActivity extends AppCompatActivity implements SearchFilterFra
 
     private final int DELAY = 1000;
 
-    @BindView(R.id.gvResults) GridView gvResults;
+    @BindView(R.id.gvResults) RecyclerView gvResults;
     @BindView(R.id.toolbar) Toolbar toolbar;
 
     ArrayList<Article> articles; // model
-    ArticleArrayAdapter adapter; // controller
+    ArticleAdapter adapter; // controller
     Filters filters = null; // model
-    EndlessScrollListener scrollListener = null;
+    EndlessRecyclerViewScrollListener scrollListener = null;
     String userSubmittedQuery = null;
     int page = 0;
 
@@ -75,10 +76,6 @@ public class SearchActivity extends AppCompatActivity implements SearchFilterFra
     }
 
     private void showFilterDialog() {
-        //Intent intent = new Intent(getApplicationContext(), SearchFilterFragment.class);
-        // Pass the filters to the intent
-        //intent.putExtra("filters", Parcels.wrap(filters));
-
         if (filters == null) {
             filters = new Filters("", "", new SparseBooleanArray());
         }
@@ -91,35 +88,41 @@ public class SearchActivity extends AppCompatActivity implements SearchFilterFra
         // setup model
         articles = new ArrayList<>();
         // setup controller
-        adapter = new ArticleArrayAdapter(this, articles);
+        adapter = new ArticleAdapter(this, articles);
         // link adapter to results
         gvResults.setAdapter(adapter);
+        StaggeredGridLayoutManager gridLayoutManager = new StaggeredGridLayoutManager(4,
+                StaggeredGridLayoutManager.VERTICAL);
+        gvResults.setLayoutManager(gridLayoutManager);
         // attach click listener to individual result (Article)
-        gvResults.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                // create an intent to display the article
-                Intent intent = new Intent(getApplicationContext(), ArticleActivity.class);
-                // get the article to display
-                Article article = articles.get(i);
-                // pass in the article to intent
-                intent.putExtra("article", Parcels.wrap(article));
-                // launch the activity
-                startActivity(intent);
-            }
-        });
+        // Use decorator patter
+        // http://guides.codepath.com/android/Using-the-RecyclerView#attaching-click-listeners-with-decorators
+        ItemClickSupport.addTo(gvResults).setOnItemClickListener(
+                new ItemClickSupport.OnItemClickListener() {
+                    @Override
+                    public void onItemClicked(RecyclerView recyclerView, int position, View v) {
+                        // create an intent to display the article
+                        Intent intent = new Intent(getApplicationContext(), ArticleActivity.class);
+                        // get the article to display
+                        Article article = articles.get(position);
+                        // pass in the article to intent
+                        intent.putExtra("article", Parcels.wrap(article));
+                        // launch the activity
+                        startActivity(intent);
+                    }
+                }
+        );
+
         // Attach the listener to the AdapterView onCreate
-        scrollListener = new EndlessScrollListener() {
+        scrollListener = new EndlessRecyclerViewScrollListener(gridLayoutManager) {
             @Override
-            public boolean onLoadMore(int page, int totalItemsCount) {
+            public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
                 // Triggered only when new data needs to be appended to the list
                 // Add whatever code is needed to append new items to your AdapterView
                 loadNextDataFromApi(page);
-                // or loadNextDataFromApi(totalItemsCount);
-                return true; // ONLY if more data is actually being loaded; false otherwise.
             }
         };
-        gvResults.setOnScrollListener(scrollListener);
+        gvResults.addOnScrollListener(scrollListener);
     }
 
     // Append the next page of data into the adapter
@@ -166,9 +169,12 @@ public class SearchActivity extends AppCompatActivity implements SearchFilterFra
                     public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                         Log.d("DEBUG", response.toString());
                         JSONArray articleJsonResults = null;
+                        int curSize = adapter.getItemCount();
                         try {
                             articleJsonResults = response.getJSONObject("response").getJSONArray("docs");
-                            adapter.addAll(Article.fromJSONArray(articleJsonResults));
+                            ArrayList<Article> newList = Article.fromJSONArray(articleJsonResults);
+                            articles.addAll(newList);
+                            adapter.notifyItemRangeInserted(curSize, newList.size());
                             Log.d("DEBUG", articles.toString());
 
                         } catch (JSONException e) {
@@ -244,7 +250,7 @@ public class SearchActivity extends AppCompatActivity implements SearchFilterFra
                     userSubmittedQuery = query;
                     // 2. reset the pagination and results array
                     page = 0;
-                    adapter.clear(); // or articles.clear();
+                    articles.clear();
                     adapter.notifyDataSetChanged();
                     scrollListener.resetState();
                     // Perform query
